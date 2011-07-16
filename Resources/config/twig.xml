@@ -6,9 +6,13 @@
 
     <services>
         
-        <service id="twig.extension.ago" class="Ano\Bundle\TwigExtBundle\Twig\Extension\AgoExtension" public="false">
+        <service id="twig.extension.ano_ago" class="Ano\Bundle\TwigExtBundle\Twig\Extension\AgoExtension" public="false">
             <tag name="twig.extension" />
             <argument type="service" id="service_container" />
+        </service>
+
+        <service id="twig.extension.ano_text" class="Ano\Bundle\TwigExtBundle\Twig\Extension\TextExtension" public="false">
+            <tag name="twig.extension" />
         </service>
 
     </services>

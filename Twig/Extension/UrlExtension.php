@@ -26,62 +26,87 @@ class UrlExtension extends \Twig_Extension
     public function getFunctions()
     {
         return array(
-            'push_url' => new \Twig_Function_Method($this, 'pushUrl'),
-            'pull_url' => new \Twig_Function_Method($this, 'pullUrl'),
+            'url_push' => new \Twig_Function_Method($this, 'urlPush'),
+            'url_pull' => new \Twig_Function_Method($this, 'urlPull'),
         );
     }
 
-    public function pushUrl($param, $value)
+    public function urlPush($name, $value, $url = null)
     {
-        $urlParts = $this->getCurrentUrlParts();
-        $urlParts['params'][$param] = $value;
+        $urlParts = $this->getCurrentUrlParts($url);
+        $urlParts['params'][$name] = $value;
 
         return $this->buildUrl($urlParts);
     }
 
-    public function pullUrl($param)
+    public function urlPull($param, $url = null)
     {
-        $urlParts = $this->getCurrentUrlParts();
-        if (array_key_exists($param, $urlParts['params'])) {
-            unset($urlParts['params'][$param]);
+        $urlParts = $this->getCurrentUrlParts($url);
+        if (is_array($param)) {
+            foreach($param as $name) {
+                if (array_key_exists($name, $urlParts['params'])) {
+                    unset($urlParts['params'][$name]);
+                }
+            }
+        }
+        else {
+            if (array_key_exists($param, $urlParts['params'])) {
+                unset($urlParts['params'][$param]);
+            }
         }
 
         return $this->buildUrl($urlParts);
     }
 
-    protected function getCurrentUrlParts()
+    protected function getCurrentUrlParts($url = null)
     {
+        $useCurrent = false;
         $request = $this->getRequest();
-        $urlParts = parse_url($request->getRequestUri());
-        $urlParts['scheme'] = $request->getScheme();
-        $urlParts['host'] = $request->getHttpHost();
-        $urlParts['baseUrl'] = $request->getBaseUrl();
-        $urlParts['path'] = $request->getPathInfo();
-        $urlParts['port'] = $request->getPort();
+        if (empty($url)) {
+            $useCurrent = true;
+            $url = $request->getRequestUri();
+        }
+        $urlParts = parse_url($url);
+
+        if ($useCurrent) {
+            $urlParts['scheme'] = $request->getScheme();
+            $urlParts['host'] = $request->getHttpHost();
+            $urlParts['baseUrl'] = $request->getBaseUrl();
+            $urlParts['path'] = $request->getPathInfo();
+            $urlParts['port'] = $request->getPort();
+        }
+
         $urlParts['params'] = array();
-        parse_str($urlParts['query'], $urlParts['params']);
+        if (array_key_exists('query', $urlParts)) {
+            parse_str($urlParts['query'], $urlParts['params']);
+        }
 
         return $urlParts;
     }
 
     protected function buildUrl(array $urlParts)
     {
-        $request = $this->getRequest();
-        $scheme = $urlParts['scheme'];
-        $baseUrl = $urlParts['baseUrl'];
+        $scheme = array_key_exists('scheme', $urlParts) ? $urlParts['scheme'] : '';
+        $host = array_key_exists('host', $urlParts) ? $urlParts['host'] : '';
+        $path = array_key_exists('path', $urlParts) ? $urlParts['path'] : '';
+        $baseUrl = array_key_exists('baseUrl', $urlParts) ? $urlParts['baseUrl'] : '';
+        $port = array_key_exists('port', $urlParts) ? $urlParts['port'] : 80;
         $qs = http_build_query($urlParts['params']);
-        
-        $port = '';
-        if ('http' === $scheme && 80 != $urlParts['port']) {
-            $port = ':' . $urlParts['port'];
-        } elseif ('https' === $scheme && 443 != $urlParts['port']) {
-            $port = ':' . $urlParts['port'];
+
+        if ('http' === $scheme && 80 != $port) {
+            $port = ':' . $port;
+        } elseif ('https' === $scheme && 443 != $port) {
+            $port = ':' . $port;
+        }
+        if (80 == $port || 443 == $port) {
+            $port = '';
         }
 
         $url = (!empty($baseUrl)) ? '/' . $baseUrl : '';
-        $url.= $urlParts['path'];
+        $url.= $path;
         $url.= (!empty($qs)) ? '?' . $qs : '';
-        $url = $scheme . '://' . $request->getHost() . $port . $url;
+        $prefix = (!empty($scheme)) ? $scheme . '://' : '';
+        $url = $prefix . $host . $port . $url;
         $url.= (array_key_exists('anchor', $urlParts)) ? '#' . $urlParts['anchor'] : '';
 
         return $url;

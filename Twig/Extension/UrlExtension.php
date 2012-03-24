@@ -34,24 +34,38 @@ class UrlExtension extends \Twig_Extension
     public function urlPush($name, $value, $url = null)
     {
         $urlParts = $this->getCurrentUrlParts($url);
+        // TODO: handle arrays and replacing existing value instead of appending new parameter
         $urlParts['params'][$name] = $value;
 
         return $this->buildUrl($urlParts);
     }
 
-    public function urlPull($param, $url = null)
+    public function urlPull($param, $url = null, $matchValue = null)
     {
         $urlParts = $this->getCurrentUrlParts($url);
+
+        $unset = function($name) use (&$urlParts, $matchValue) {
+            if (null === $matchValue) {
+                unset($urlParts['params'][$name]);
+            } else {
+                if (is_array($urlParts['params'][$name])) {
+                    $urlParts['params'][$name] = array_diff($urlParts['params'][$name], array($matchValue));
+                } elseif ($matchValue === $urlParts['params'][$name]) {
+                    unset($urlParts['params'][$name]);
+                }
+            }
+        };
+
         if (is_array($param)) {
             foreach($param as $name) {
                 if (array_key_exists($name, $urlParts['params'])) {
-                    unset($urlParts['params'][$name]);
+                    $unset($name);
                 }
             }
         }
         else {
             if (array_key_exists($param, $urlParts['params'])) {
-                unset($urlParts['params'][$param]);
+                $unset($param);
             }
         }
 
@@ -109,7 +123,7 @@ class UrlExtension extends \Twig_Extension
         $url = $prefix . $host . $port . $url;
         $url.= (array_key_exists('anchor', $urlParts)) ? '#' . $urlParts['anchor'] : '';
 
-        return $url;
+        return urldecode($url);
     }
 
     /**

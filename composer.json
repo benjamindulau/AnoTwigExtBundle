@@ -1,0 +1,27 @@
+{
+    "name":         "ano/twig-ext-bundle",
+    "description":  "Anonymation Twig extensions bundle",
+    "keywords":     ["twig"],
+    "type":         "symfony-bundle",
+    "license":      "MIT",
+    "authors": [
+        {
+            "name":     "Benjamin Dulau",
+            "email":    "benjamin.dulau@anonymation.com",
+            "homepage": "http://www.anonymation.com"
+        }
+    ],
+    "require": {
+        "symfony/framework-bundle": "2.0.*",
+        "twig/twig": "1.*",
+    },
+    "autoload": {
+        "psr-0": { "Ano\\Bundle\\TwigExtBundle": "" }
+    },
+    "target-dir": "Ano/Bundle/TwigExtBundle",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}

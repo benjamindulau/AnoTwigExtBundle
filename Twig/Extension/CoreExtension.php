@@ -12,7 +12,7 @@ class CoreExtension extends \Twig_Extension
     public function getTests()
     {
         return array(
-            'hash'  => new \Twig_Function_Method($this, 'isArray'),
+            'hash'  => new \Twig_Test_Method($this, 'isArray'),
         );
     }
 

@@ -18,10 +18,5 @@
     "autoload": {
         "psr-0": { "Ano\\Bundle\\TwigExtBundle": "" }
     },
-    "target-dir": "Ano/Bundle/TwigExtBundle",
-    "extra": {
-        "branch-alias": {
-            "dev-master": "1.0-dev"
-        }
-    }
+    "target-dir": "Ano/Bundle/TwigExtBundle"
 }
